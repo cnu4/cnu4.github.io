@@ -7,7 +7,7 @@ title: Fangxw's blog
 subtitle:
 description: 
 author: Fangxw
-language: zh-Hans
+language: en
 timezone:
 avatar: /images/avatar.jpg
 
@@ -64,7 +64,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: next
+theme: apollo
 stylus:
   compress: true
 
