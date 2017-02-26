@@ -1,5 +1,5 @@
 ---
-title: "在多页面项目下使用 Webpack+Vue"
+title: "在多页面项目下使用 Webpack + Vue"
 date: 2016-03-21 22:05:51
 tags:
 	- vue

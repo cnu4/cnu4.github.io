@@ -13,7 +13,7 @@ avatar: /images/avatar.jpg
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://cnu4.github.io
+url: http://fangxw.me
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -78,5 +78,6 @@ duoshuo_share : true
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repository: git@github.com:cnu4/cnu4.github.io.git
-  branch: master
+  repo: 
+      github: https://github.com/cnu4/cnu4.github.io.git,master
+      coding: https://git.coding.net/cnu4/cnu4.git,master
