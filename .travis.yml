@@ -10,6 +10,8 @@ script:
 branches:
   only:
   - source
+git:
+  submodules: false
 before_install:
 - openssl aes-256-cbc -K $encrypted_5b8902d6a626_key -iv $encrypted_5b8902d6a626_iv
   -in .travis/id_rsa.enc -out ~\/.ssh/id_rsa -d
@@ -20,3 +22,4 @@ before_install:
 - ssh-add ~/.ssh/id_rsa
 - git config --global user.name "cnu4"
 - git config --global user.email "fangxw1004@qq.com"
+- git submodule update --init --recursive
