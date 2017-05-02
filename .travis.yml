@@ -9,7 +9,7 @@ script:
 - rm -rf ~/.ssh
 branches:
   only:
-  - sourse
+  - source
 before_install:
 - openssl aes-256-cbc -K $encrypted_5b8902d6a626_key -iv $encrypted_5b8902d6a626_iv
   -in .travis/id_rsa.enc -out ~\/.ssh/id_rsa -d
