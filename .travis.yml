@@ -1,0 +1,22 @@
+language: node_js
+node_js: 6.10.1
+install:
+- npm install
+- npm install hexo-cli -g
+script:
+- hexo g
+- hexo d
+- rm -rf ~/.ssh
+branches:
+  only:
+  - sourse
+before_install:
+- openssl aes-256-cbc -K $encrypted_5b8902d6a626_key -iv $encrypted_5b8902d6a626_iv
+  -in .travis/id_rsa.enc -out ~\/.ssh/id_rsa -d
+- chmod 600 ~/.ssh/id_rsa
+- sudo cp .travis/ssh_config /etc/ssh/ssh_config
+- sudo chmod 755 /etc/ssh/ssh_config
+- eval "$(ssh-agent -s)"
+- ssh-add ~/.ssh/id_rsa
+- git config --global user.name "cnu4"
+- git config --global user.email "fangxw1004@qq.com"
