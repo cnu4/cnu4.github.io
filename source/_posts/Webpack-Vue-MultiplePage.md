@@ -9,6 +9,9 @@ tags:
 
 ## 前言
 
+>这篇是 webpack 1.x 的多页面配置，4.x 的版本[在这里](http://fangxw.me/2018/12/30/webpack4-vue-miltiple-page)。
+>但是多页面配置的思路是一样的，变的是配置，所以可以先看这篇配置，实际使用 4.x 版本的配置
+
 webpack + vue 能很好的完成单页面应用的开发，官方也提供了很多例子和教程。但使用 webpack 能不能用到多页面项目中，同时又能使用 vue 进行模块组件化开发呢？
 
 这里将结合具体的项目，说明一下我是如何配置的。我们希望能在项目里做到
@@ -20,7 +23,7 @@ webpack + vue 能很好的完成单页面应用的开发，官方也提供了很
 
 <!-- more -->
 
-下面 DEMO 的代码地址： [https://github.com/cnu4/Webpack-Vue-MultiplePage](https://github.com/cnu4/Webpack-Vue-MultiplePage)
+下面 DEMO 的代码地址： [https://github.com/cnu4/Webpack-Vue-MultiplePage](https://github.com/cnu4/Webpack-Vue-MultiplePage/tree/v1)
 
 下面是我们项目的目录结构
 
