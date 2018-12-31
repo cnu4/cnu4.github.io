@@ -1,5 +1,5 @@
 ---
-title: Webpack + Vue 多页面项目升级 Webpack 4 以及打包优化
+title: Webpack + Vue 多页面项目升级 Webpack 4 以及构建速度优化
 date: 2018-12-30 12:15:32
 tags:
 	- vue
