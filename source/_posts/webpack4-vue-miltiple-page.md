@@ -11,7 +11,7 @@ tags:
 
 早在 2016 年我就发布过一篇关于在多页面下使用 Webpack + Vue 的配置的文章，当时是我在做自己一个个人项目时遇到了多页面的配置问题，想到别人也可能遇到跟我同样的问题，就把配置的思路分享出来了，[传送门](http://fangxw.me/2016/03/21/Webpack-Vue-MultiplePage/)在这里。
 
-因为那份配置直到现在还有人在关注，同时最近公司帮助项目升级了 Webpack 4，趁机也把之前的配置也升级了一下，而且博客荒废了这么久，都快 9102 年了，不能连年均一篇博文都不到，所以有了下面的分享。
+因为那份配置直到现在还有人在关注，同时最近公司帮助项目升级了 Webpack 4，趁机也把之前的配置也升级了一下，顺手加上了 babel 7 的配置，而且博客荒废了这么久，都快 9102 年了，不能连年均一篇博文都不到，所以有了下面的分享。
 
 <!-- more -->
 
@@ -131,66 +131,21 @@ module.exports = {
 }
 ```
 
-## 2. 增加 ES6+ 支持
-
-### 2.1 安装依赖
-
- - "babel-core": "^6.26.3",
- - "babel-loader": "^7.1.5",
- - "babel-plugin-transform-runtime": "^6.23.0",
- - "babel-preset-env": "^1.7.0",
- - "babel-preset-stage-2": "^6.24.1",
- - "babel-runtime": "^6.26.0",
-
-### 2.2 添加配置文件 .babelrc
-
-```json
-{
-  "presets": [
-    ["env", {
-      "modules": false,
-      "targets": {
-        "browsers": ["> 1%", "last 2 versions", "ie >= 9"]
-      },
-      "useBuiltIns": "usage"
-    }],
-    "stage-2"
-  ],
-  "plugins": ["transform-runtime"]
-}
-```
-
-### 2.3 增加 webpack 配置
-
-```js
-module.exports = {
-  modules: {
-    rules: [
-      {
-        test:  /\.js$/,
-        loader:  'babel-loader',
-        exclude:  /node_modules/
-      }
-    ]
-  }
-}
-```
-
-### 2.4 更新 eslint 配置
-
-## 3. 打包速度优化
+## 2. 打包速度优化
 
 可以使用下面的插件看看打包时间主要耗时在哪
 
 [speed-measure-webpack-plugin](https://github.com/stephencookdev/speed-measure-webpack-plugin)
 
-### 3.1 TerserPlugin 开启 parallel 选项
+### 2.1 相关 plugin 开启 parallel 选项
 
-开启多线程
+TerserPlugin 压缩插件可以开启多线程，见上面配置
 
-### 3.2 HappyPack 和 thread-loader 开启 Loader 多进程转换
+### 2.2 HappyPack 和 thread-loader 开启 Loader 多进程转换
 
 github 的 Demo 中没有引入，有兴趣的同学可以尝试，在一些耗时的 Loader 确实可以提高速度
+
+vue-loader 不支持 HappyPack，官方建议用 thread-loader
 
 ```js
 const HappyPack = require('happypack');
@@ -217,7 +172,7 @@ exports.plugins = [
 ];
 ```
 
-### 3.3 提前打包公共代码
+### 2.3 提前打包公共代码
 
 #### DllPlugin
  
@@ -262,9 +217,83 @@ module.exports.plugins.push(new AutoDllPlugin({
 }));
 ```
 
-### 3.4 terser-webpack-plugin
+## 3. 增加 ES6+ 支持
 
-webpack 官方推荐使用的 JS 压缩插件，取代 UglifyJS，大幅提高打包速度
+### 3.1 安装依赖
+
+  - @babel/core
+  - @babel/plugin-proposal-class-properties
+  - @babel/plugin-proposal-decorators
+  - @babel/plugin-syntax-dynamic-import
+  - @babel/plugin-transform-runtime
+  - @babel/preset-env
+  - @babel/runtime
+  - babel-loader
+  - @babel/polyfill
+
+由于项目中是第一次配置 babel，一步到位直接使用新版 7，新版 babel 使用新的命名空间 @babel，如果是老项目升级 babel 7，可以使用工具 [babel-upgrade](https://github.com/babel/babel-upgrade)，读一下 [升级文档](https://babeljs.io/docs/en/v7-migration)
+
+这里说下上面依赖的作用和升级 babel 7 的改动。
+
+#### @babel/runtime, @babel/plugin-transform-runtime
+
+新版中 @babel/runtime 只包含了一些 helpers，如果需要 core-js polyfill 浏览器不支持的 API，可以用 transform 提供的选项 `{"corejs": 2}` 并安装依赖 `@babel/runtime-corejs2`。即使默认的 polyfill 没了，但 @babel/plugin-transform-runtime 依然可以为我们分离辅助函数，减少代码体积
+
+#### @babel/polyfill
+
+使用 @babel/runtime 的 polyfill 不会污染全局 API，因为不会改动原生对象的原型，它只是创建一个辅助函数在当前作用于生效，所以诸如 `[1, 2].includes(1)` 这样的语法也无法被 polyfill。如果不是开发第三方库，可以使用 @babel/polyfill，相反他的 polyfill 会影响到浏览器全局的对象原型
+
+@babel/preset-env 提供了一个 [useBuiltIns](https://babeljs.io/docs/en/next/babel-preset-env.html#usebuiltins) 选项来按需引入 polyfill，而不需要引入全部。另一种方法是直接引用 core-js 包下的特定 polyfill。
+
+#### stage presets
+
+现在需要手动安装 @babel/plugin-proposal 开头的依赖是因为 babel 在新版中移除了 stage presets，为的是后续更好维护处于 proposal 阶段的语法。想要使用 proposal 阶段的语法需要单独引用对应的 plugin， 上面的配置只加了几个处于 stage 3 阶段的 plugin，老项目建议使用 babel-upgrade 升级，自动添加依赖
+
+### 3.2 添加配置文件 .babelrc
+
+```json
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "modules": false,
+        "targets": {
+          "browsers": [
+            "> 1%",
+            "last 2 versions",
+            "ie >= 11"
+          ]
+        },
+        "useBuiltIns": "usage" // 按需引入 polyfill
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-syntax-dynamic-import",
+    ["@babel/plugin-proposal-class-properties", { "loose": false }],
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
+  ]
+}
+
+```
+
+### 3.3 增加 webpack 配置
+
+```js
+module.exports = {
+  modules: {
+    rules: [
+      {
+        test:  /\.js$/,
+        loader:  'babel-loader',
+        exclude:  /node_modules/
+      }
+    ]
+  }
+}
+```
 
 ## 4. 其他问题
 
@@ -272,7 +301,6 @@ webpack 官方推荐使用的 JS 压缩插件，取代 UglifyJS，大幅提高�
 
 ### 4.1 json-loader
 
-json-loader
 webpack4 内置的json-loader 有点兼容性问题，安装 json-loader 依赖和更改配置
 
 解决：
@@ -300,17 +328,16 @@ vue-loader 升级到 15.x 后，会导致旧的 commonjs 写法加载有问题�
 
 ### 4.3 提取公共 css 代码
 
-scss 中 import 的代码不能被提取到公共 css 中
+scss 中 import 的代码不能被提取到公共 css 中。scss 中的 @import 是使用 sass-loader 处理的，处理后已经变成 css 文件，webpack 已经不能判断是否是同一个模块，所以不能提取到公共的 css 中，但多页面中我们还是希望一些公共的 css 能被提取到公共的文件中。 
 
-解决：改到 js 中引入就可以，详见下面 issue
+解决：将需要提取到公共文件的 css 改到 js 中引入就可以，详见下面 issue
 
 [mini-css-extract-plugin + sass-loader + splitChunks · Issue #49](https://github.com/webpack-contrib/mini-css-extract-plugin/issues/49)
 
 ### 4.4 mini-css-extract-plugin filename 不支持函数
 
-mini-css-extract-plugin 的 filename 选项不支持函数，所以只能转用其他方式解决
+mini-css-extract-plugin 的 filename 选项不支持函数，但我们有时候还是希望能单独控制公共 css 文件的位置，而不是和其他入口文件的 css 使用一样的目录格式
 
 解决：使用插件 FileManagerPlugin 在构建后移动文件，等 filename 支持函数后再优化
 
 [feat: allow the option filename to be a function · Issue #143 · webpack-contrib/mini-css-extract-plugin · GitHub](https://github.com/webpack-contrib/mini-css-extract-plugin/issues/143)
-
