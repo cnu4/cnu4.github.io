@@ -80,4 +80,3 @@ deploy:
   type: git
   repo: 
       github: git@github.com:cnu4/cnu4.github.io.git,master
-      coding: git@git.coding.net:cnu4/cnu4.git,master
