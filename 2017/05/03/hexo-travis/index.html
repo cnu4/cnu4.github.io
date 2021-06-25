@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.9.0"><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 使用 Github 来管理 Hexo 博客源代码，并使用 Travis 来自动部署 · Fangxw's Blog</title><meta name="description" content="使用 Github 来管理 Hexo 博客源代码，并使用 Travis 来自动部署 - Fangxw"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/apollo.css"><script data-ad-client="ca-pub-7336094102453045" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script><link rel="search" type="application/opensearchdescription+xml" href="http://fangxw.me/atom.xml" title="Fangxw's Blog"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="http://weibo.com/2489238680" target="_blank" class="nav-list-link">WEIBO</a></li><li class="nav-list-item"><a href="https://github.com/cnu4" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">使用 Github 来管理 Hexo 博客源代码，并使用 Travis 来自动部署</h1><div class="post-info">May 3, 2017</div><div class="post-content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>目前我的博客是部署到 GitHub 和 Coding，出于某些原因国内百度爬虫不能爬去到 GitHub 相关的内容，所以才需要同时部署到国内 Coding。</p>
+<p>但每次写完文章都需要部署到两个地方，还是有点繁琐，刚好之前就听过持续集成和相关服务 <code>Travis</code>，可以用来解决这个问题。<strong>下面是具体的配置和步骤</strong>，同时也解决了怎么管理博客源码和定制主题源码的问题。</p>
+<a id="more"></a>
+<p>另外 Coding 在去年开始在免费使用其 page 服务的情况下，需要在网站显示有关 Coding 的广告文字。关于如何只在使用 Coding 的服务时才显示那段广告文字，可以查看我博客的源码中的解决方案。 </p>
+<h2 id="配置和步骤"><a href="#配置和步骤" class="headerlink" title="配置和步骤"></a>配置和步骤</h2><h3 id="管理以及定制-Hexo-主题"><a href="#管理以及定制-Hexo-主题" class="headerlink" title="管理以及定制 Hexo 主题"></a>管理以及定制 Hexo 主题</h3><p>将主题 Fork 到自己的账号下后，在博客源代码根目录使用 <code>git submodule</code> 将主题的仓库作为子仓库</p>
+<p><code>git submodule add git@github.com:cnu4/hexo-theme-apollo.git themes/apollo</code></p>
+<p>进入主题目录，修改主题后按正常流程 <code>git commit</code>, <code>git push</code> 更新主题的 git 仓库，再到博客根目录 <code>commit</code> 源代码</p>
+<h3 id="持续集成"><a href="#持续集成" class="headerlink" title="持续集成"></a>持续集成</h3><p>要求：持续部署到 Github 和 Coding</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>将 Hexo 源代码 <code>push</code> 到 Github 的仓库，我是将博客的仓库的 <code>source</code> 分支作为源代码仓库</p>
+<p>登录 <code>travis</code> 并使用 github 登录后开启上述源代码的仓库</p>
+<p>安装 <code>travis cli</code> 工具后登录，使用一下命令生成私钥的加密文件，以下是 Mac 环境下的命令</p>
+<p><code>gem install travis</code></p>
+<p><code>travis login</code></p>
+<p><code>travis encrypt-file ~/.ssh/id_rsa --add -r /cnu4/cnu4.github.io</code></p>
+<p>以上命令会自动在 <code>.travis.yml</code> 文件的 <code>before_install</code> 中添加解密得到私钥的代码，并生成文件 <code>id_rsa.enc</code></p>
+<p>创建 <code>.travis</code> 文件夹，在里面新建 <code>ssh_config</code> 文件，填入一下内容，避免第一次连接时的询问</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host *</span><br><span class="line">StrictHostKeyChecking no</span><br><span class="line">IdentityFile ~/.ssh/id_rsa</span><br><span class="line">IdentitiesOnly yes</span><br></pre></td></tr></table></figure>
+<p>将 <code>id_rsa.enc</code> 文件移入 <code>.travis</code> 文件夹</p>
+<p>下面是 <code>.travis.yml</code> 配置文件</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">language:</span> <span class="string">node_js</span></span><br><span class="line"><span class="attr">node_js:</span> <span class="number">6.10</span><span class="number">.1</span></span><br><span class="line"><span class="attr">install:</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">npm</span> <span class="string">install</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">npm</span> <span class="string">install</span> <span class="string">hexo-cli</span> <span class="bullet">-g</span></span><br><span class="line"><span class="attr">script:</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">hexo</span> <span class="string">g</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">hexo</span> <span class="string">d</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">rm</span> <span class="bullet">-rf</span> <span class="string">~/.ssh</span></span><br><span class="line"><span class="attr">branches:</span></span><br><span class="line"><span class="attr">  only:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">source</span></span><br><span class="line"><span class="attr">git:</span></span><br><span class="line"><span class="attr">  submodules:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">before_install:</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">openssl</span> <span class="string">aes-256-cbc</span> <span class="bullet">-K</span> <span class="string">$encrypted_5b8902d6a626_key</span> <span class="bullet">-iv</span> <span class="string">$encrypted_5b8902d6a626_iv</span></span><br><span class="line"><span class="bullet">  -</span><span class="string">in</span> <span class="string">.travis/id_rsa.enc</span> <span class="bullet">-out</span> <span class="string">~/.ssh/id_rsa</span> <span class="bullet">-d</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">chmod</span> <span class="number">600</span> <span class="string">~/.ssh/id_rsa</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">sudo</span> <span class="string">cp</span> <span class="string">.travis/ssh_config</span> <span class="string">/etc/ssh/ssh_config</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">sudo</span> <span class="string">chmod</span> <span class="number">755</span> <span class="string">/etc/ssh/ssh_config</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">eval</span> <span class="string">"$(ssh-agent -s)"</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">ssh-add</span> <span class="string">~/.ssh/id_rsa</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">git</span> <span class="string">config</span> <span class="bullet">--global</span> <span class="string">user.name</span> <span class="string">"cnu4"</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">git</span> <span class="string">config</span> <span class="bullet">--global</span> <span class="string">user.email</span> <span class="string">"fangxw1004@qq.com"</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">git</span> <span class="string">submodule</span> <span class="string">update</span> <span class="bullet">--init</span> <span class="bullet">--recursive</span></span><br></pre></td></tr></table></figure>
+<p>在 <code>before_install</code> 中先解密得到私钥并放到 <code>.ssh</code> 目录下，接下来的 <code>npm install</code> 安装 <code>hexo</code>，然后就是构建和部署命令了</p>
+<p>配置中需要注意：</p>
+<ul>
+<li><p>配置中通过 <code>git: submodules: false</code> 使得 travis 不用 <code>https</code> 的方式处理 git 子模块，否则此时会出现克隆时身份验证不通过的情况</p>
+</li>
+<li><p>通过将代码 <code>git submodule update --init --recursive</code> 添加在 <code>ssh-add ~/.ssh/id_rsa</code> 之后，使用 <code>ssh</code> 处理子模块</p>
+</li>
+<li><p>注意加密的 ssh 私钥不能有密码保护，也就是创建私钥的时候不要输入密码</p>
+</li>
+</ul>
+<p>接下来写文章后只需要一下命令便可以完成自动部署到 Github 和 Coding</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git add .</span><br><span class="line">git commit -m <span class="string">"commit message"</span></span><br><span class="line">git push origin <span class="built_in">source</span> <span class="comment"># 我的源文件仓库是 source 分支</span></span><br></pre></td></tr></table></figure>
+<h4 id="新环境"><a href="#新环境" class="headerlink" title="新环境"></a>新环境</h4><p>在换了新电脑后，使用以下流程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> repo_of_source.git <span class="comment"># 克隆源码</span></span><br><span class="line">git submodule init <span class="comment"># 初始化主题</span></span><br><span class="line">git submodule update</span><br><span class="line">hexo new</span><br><span class="line">git add .</span><br><span class="line">git commit</span><br><span class="line">git push origin <span class="built_in">source</span> <span class="comment"># 推送到 source 分支触发自动部署</span></span><br></pre></td></tr></table></figure></div></article></div></main><footer><div class="paginator"><a href="/2018/07/01/cdn/" class="prev">PREV</a><a href="/2016/08/22/github-explorer-redux/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'fangxwsnotes';
+var disqus_identifier = '2017/05/03/hexo-travis/';
+var disqus_title = '使用 Github 来管理 Hexo 博客源代码，并使用 Travis 来自动部署';
+var disqus_url = 'http://fangxw.me/2017/05/03/hexo-travis/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//fangxwsnotes.disqus.com/count.js" async></script><div class="copyright"><p>© 2016 - 2021 <a href="http://fangxw.me">Fangxw</a>, <span id="host-by"></span> powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-89489706-1",'auto');ga('send','pageview');</script><script>(function(){
+    var req = GetXmlHttpObject()  
+    if (req == null) {  
+        console.log("not support AJAX!");  
+        return;  
+    }
+    req.onreadystatechange = function() {  
+        if (req.readyState === 4 && req.status === 200) {  
+            var deploy_server = req.getResponseHeader("Server");
+            if(deploy_server === 'Coding Pages'){
+                document.getElementById('host-by').innerHTML+='hosted by <a href="https://pages.coding.me">Coding Pages, </a>'
+            }
+        }  
+    };  
+    req.open('GET', document.location, true);
+    req.send(null);
+})();
+function GetXmlHttpObject() {  
+    var xmlHttp = null;  
+    try {  
+        // Firefox, Opera 8.0+, Safari  
+        xmlHttp = new XMLHttpRequest();  
+    } catch (e) {  
+        // Internet Explorer  
+        try {  
+            xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");  
+        } catch (e) {  
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");  
+        }  
+    }  
+    return xmlHttp;  
+}</script></body></html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.9.0"><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> CDN 介绍和思考 · Fangxw's Blog</title><meta name="description" content="CDN 介绍和思考 - Fangxw"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/apollo.css"><script data-ad-client="ca-pub-7336094102453045" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script><link rel="search" type="application/opensearchdescription+xml" href="http://fangxw.me/atom.xml" title="Fangxw's Blog"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="http://weibo.com/2489238680" target="_blank" class="nav-list-link">WEIBO</a></li><li class="nav-list-item"><a href="https://github.com/cnu4" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">CDN 介绍和思考</h1><div class="post-info">Jul 1, 2018</div><div class="post-content"><p>提起 CDN，大家第一浮现在脑海的应该是利用 CDN 缓存可以提高我们网页的访问速度，也正因为此，在使用了 CDN 仿佛我们就不用去担忧静态资源的访问问题，比如就算在高并发下，也有 CDN 服务器替我们抗住压力。但事实真的是这样的吗？下面我从我在公司实际应用遇到的坑里，深究一下 CDN 的原理，说明 CDN 在高并发也会遇到的问题。下面从 CDN 的原理开始说起。</p>
+<a id="more"></a>
+<h2 id="CDN-介绍"><a href="#CDN-介绍" class="headerlink" title="CDN 介绍"></a>CDN 介绍</h2><p>CDN（内容分发网络）全称是 Content Delivery Network，建立并覆盖在承载网之上、由分布在不同区域的边缘节点服务器群组成的分布式网络，替代传统以 WEB Server 为中心的数据传输模式。</p>
+<p>作用是将源内容发布到边缘节点，配合精准的调度系统；将用户的请求分配至最适合他的节点，使用户可以以最快的速度取得他所需的内容，有效解决Internet网络拥塞状况，提高用户访问的响应速度。</p>
+<h3 id="传统网络访问"><a href="#传统网络访问" class="headerlink" title="传统网络访问"></a>传统网络访问</h3><p><img src="https://i.loli.net/2020/11/23/JsM2QmVpH9T6kDt.png" alt="cdn-1.png"></p>
+<p>传统的网络访问过程图片见上图（图片来自网络，侵删）。首先我们需要知道真实访问目标站点的 IP 地址，这个时候需要对域名进行解析获得 IP 地址。一般本地计算机会请求本地 ISP 的 DNS 服务器，查询是否有缓存记录，如果有则直接访问结果。如果没有，ISP 的 DNS 服务器会向 DNS 根服务器查询，根域名服务器会返回授权服务器地址，告诉他可以通过这个授权服务器找到你要的 DNS 记录。这中间省掉了一个步骤，就是根域名服务器会先跟顶级域名服务器获取授权服务器的地址并向其发起请求。这时 ISP 向授权服务器获得记录后会缓存在本地以供下次访问，接着就是返回给本地计算机。计算机拿到记录里的 IP 地址后，就可以像目标地址发起请求。</p>
+<p>这种传统网络访问带来的问题有</p>
+<ul>
+<li>所有的请求最后都会到相同的服务器上，服务器压力大</li>
+<li>不同地区和运营商访问速度各不相同，有的用户体验会很差</li>
+<li>容易遭受网络攻击</li>
+</ul>
+<h3 id="CDN-的作用"><a href="#CDN-的作用" class="headerlink" title="CDN 的作用"></a>CDN 的作用</h3><p>CDN 就是在用户和服务器之前增加了一层缓存。要知道计算机界的两大难题，一是给变量起名字，另外一个就是缓存了。缓存可以说在计算机界无处不在。</p>
+<p>比如 CPU 为了更快从内存中读取数据，在其自己内部设定了缓存，也就是我们常说的一级、二级甚至多级缓存。计算机内存说起来其实也是 CPU 为了更快获取磁盘的数据的而存在的。再到今天的固态硬盘，为了兼顾速度与成本，大部分固态会使用价格昂贵但速度更快的小容量 SLC 固态作为缓存从而加快访问速度。</p>
+<p>所以 CDN 也是作为一层缓存，他的加入有什么作用呢？首先当然是可以减轻源站的压力。再者是可以在跨运营商跨地域的网络中加快访问速度。第三是由于网络请求不会直接到源战，从而也在一定程度上保障了网络安全。</p>
+<h3 id="使用-CDN-后的访问过程"><a href="#使用-CDN-后的访问过程" class="headerlink" title="使用 CDN 后的访问过程"></a>使用 CDN 后的访问过程</h3><p>前面说了传统的网络访问过程，那么假如 CDN 后的访问过程是怎样的呢？</p>
+<p><img src="https://i.loli.net/2020/11/24/ufjV2tiMQBXZ3K7.png" alt="cdn-2.png"></p>
+<p>首先本地计算机需要向本地 ISP DNS 服务器迭代查询记录，本地 ISP DNS 服务器在递归的向授权服务器获取记录。只是这次授权服务器不再是直接返回域名对应的源站的 IP 地址，而是返回了该域名配置了的对应的 DNS 服务商的智能调度 DNS 服务器的记录。这个域名的记录类型一般是 CNAME 类型。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;  nslookup image01.onepLus.cn 8.8.8.8</span><br><span class="line"></span><br><span class="line">Non-authoritative answer：</span><br><span class="line">image01.oneplus.cn</span><br><span class="line">canonicalname=image01.oneplus.cn.cdn20.com.</span><br><span class="line">Name： image01.onepLus.cn.cdn20.com</span><br><span class="line">Address ：157.185.184.159</span><br></pre></td></tr></table></figure>
+<p>该服务器会根据你的网络情况、地理位置和使用网络供应商等情况，返回一个最合适的 CDN 服务器的节点地址记录。本地 ISP DNS 服务器得到该地址后就会返回给本地计算机，本地计算机再根据该记录对目标 CDN 节点服务器发起请求。</p>
+<p>如果该 CDN 节点存在我们想要的资源，即有缓存的话，会直接返回。如果没有，会想源站服务器发起请求并缓存在 CDN 节点服务器，以供下次请求。这里可能会存在多级缓存服务器，如果有的话会一直往上查询直至源站。</p>
+<h2 id="高并发下-CDN-的问题"><a href="#高并发下-CDN-的问题" class="headerlink" title="高并发下 CDN 的问题"></a>高并发下 CDN 的问题</h2><h3 id="几个概念"><a href="#几个概念" class="headerlink" title="几个概念"></a>几个概念</h3><p><strong>回源</strong></p>
+<p>回源是指浏览器在发送请求的时候，CDN 节点服务器没有我们需要的资源，一层层的向上请求直到源站服务器。除了 CDN 缓存服务器没有我们要的节点，缓存过期、该资源被配置会不缓存资源都有可能导致回源。过多的回源会导致源站服务器大，极端情况下相当于 CDN 节点不存在。</p>
+<p><strong>预取</strong></p>
+<p>这里引用一下七牛云的定义</p>
+<blockquote>
+<p>文件预取，也可称为预加热或预缓存，是指新资源提前由 CDN 拉取到 CDN 缓存节点。这样一来，用户第一次访问到该节点时，就可以直接命中缓存，无需重新回源拉取，由此提高用户第一次访问的速度。</p>
+</blockquote>
+<p>一般的 CDN 服务商都会提供可配置预取文件的方法。</p>
+<p>适合在运营活动前对静态资源进行预热</p>
+<p><strong>缓存</strong></p>
+<p>相比于浏览器强制刷新来使浏览器本地缓存失效，开发者需要通过 CDN 服务商提供的“刷新缓存”操作来达到清理 CDN 边缘节点服务器缓存的目的。</p>
+<h3 id="高并发下的问题"><a href="#高并发下的问题" class="headerlink" title="高并发下的问题"></a>高并发下的问题</h3><p>这里说一下我在公司直播项目中真实遇到的场景</p>
+<p>我在项目中对直播评论的获取进行了改造，从原来的批量获取评论的方式，改成了使用 Websocket 技术从服务器实时推送评论的方式</p>
+<p>在做技术方案的时候，由于知道直播页面的静态资源都配置了 CDN，在我心里 CDN 就想一层防火墙一样能挡住直播的大流量，所以就少了对这块的思考。这里的静态资源主要有 JS、CSS 文件和图片等，图片包括了页面上的静态不变的图片和用户的头像图片。</p>
+<p>这里提到了用户的头像，每个用户的头像都是不一样的。也正是这里的不一样导致了悲剧的发生。</p>
+<p>在改造上线后直播高峰流量来临的时候，我们发现源站服务器基本没办法操作了，服务器压力到了一个很高的水平。通过后台发现正是用户头像的访问占用的很大一部分的网络带宽！但是当时的我们都没有想到，为什么已经配置的 CDN 的用户头像资源还是大量回源到了源站，导致请求激增。</p>
+<p>问题就出在这次的评论拉取的方式改成了 Websocket 服务器主动推送的方式，实时性大大增强。我们想象一下，成千上万的用户在同一时间收到了相同的评论，网页渲染评论的时候同时又去请求了相同的头像图片，这个时候大量的 CDN 节点服务器还没有这批实时的用户头像，于是在同一时间都回源到源站的访问图片资源。</p>
+<p>由于直播时太过火爆，评论太多（多的时候一秒钟可以有几十条评论），大量的请求同时回源到了源站服务器；同时由于请求太过实时，CDN 节点还没来得及缓存当前的图片，相同的请求又过来了，所以又导致了回源，源源不断的请求到达了源站，正是这个原因导致了流量的激增。</p>
+<h3 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h3><p>知道了原因，自然可以做出优化方案。</p>
+<p>最简单的方案当然是直接删除头像，或者将用户头像简化成几个随机的简单图片，不少友商正是这么做的。</p>
+<p>但是知道了原因，我们还是可以想想其他更优的方式。前面提到了预取的概念，那我们可以把所以用户头像都预取到 CDN 节点上吗？答案是理论是当然是可行的，但是一般的 CDN 服务商对每天的资源预取数量都做了限制，跟用户头像不是一个数量级。所以除非是自建的 CDN 网络，这个方案不太可行。</p>
+<p>回过头来想想为什么之前批量获取头像的时候为什么没有这个问题。原来我们在批量的时候设置了定时器每个几秒钟到服务器获取一次，这就把用户的访问给错峰开，一旦有了第一个用户访问后的缓存，就不会导致后续的回源。这种错峰的做法，也是在客户端这一侧优化高并发场景下服务器压力的常见方法。所以借鉴这种做法，我们可以优化评论的展示时间，或者优化头像的展示时间，来错峰开流量。</p>
+<h3 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h3><p>前面介绍了 CDN 的原理，然后又讲了一个实际项目中遇到的关于 CDN 的问题，想说明的是，有时候我们以为我们对某一项技术有了足够的了解，从而缺少了一些思考，但项目的考验会重重的打我们的脸。所以不要以为自己已经有了很深的认识，在什么时候都不能忘了对技术深入的思考。</p>
+</div></article></div></main><footer><div class="paginator"><a href="/2018/12/30/webpack4-vue-miltiple-page/" class="prev">PREV</a><a href="/2017/05/03/hexo-travis/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'fangxwsnotes';
+var disqus_identifier = '2018/07/01/cdn/';
+var disqus_title = 'CDN 介绍和思考';
+var disqus_url = 'http://fangxw.me/2018/07/01/cdn/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//fangxwsnotes.disqus.com/count.js" async></script><div class="copyright"><p>© 2016 - 2021 <a href="http://fangxw.me">Fangxw</a>, <span id="host-by"></span> powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-89489706-1",'auto');ga('send','pageview');</script><script>(function(){
+    var req = GetXmlHttpObject()  
+    if (req == null) {  
+        console.log("not support AJAX!");  
+        return;  
+    }
+    req.onreadystatechange = function() {  
+        if (req.readyState === 4 && req.status === 200) {  
+            var deploy_server = req.getResponseHeader("Server");
+            if(deploy_server === 'Coding Pages'){
+                document.getElementById('host-by').innerHTML+='hosted by <a href="https://pages.coding.me">Coding Pages, </a>'
+            }
+        }  
+    };  
+    req.open('GET', document.location, true);
+    req.send(null);
+})();
+function GetXmlHttpObject() {  
+    var xmlHttp = null;  
+    try {  
+        // Firefox, Opera 8.0+, Safari  
+        xmlHttp = new XMLHttpRequest();  
+    } catch (e) {  
+        // Internet Explorer  
+        try {  
+            xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");  
+        } catch (e) {  
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");  
+        }  
+    }  
+    return xmlHttp;  
+}</script></body></html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.9.0"><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 使用 redux 改写的 github-explorer · Fangxw's Blog</title><meta name="description" content="使用 redux 改写的 github-explorer - Fangxw"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/apollo.css"><script data-ad-client="ca-pub-7336094102453045" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script><link rel="search" type="application/opensearchdescription+xml" href="http://fangxw.me/atom.xml" title="Fangxw's Blog"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="http://weibo.com/2489238680" target="_blank" class="nav-list-link">WEIBO</a></li><li class="nav-list-item"><a href="https://github.com/cnu4" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">使用 redux 改写的 github-explorer</h1><div class="post-info">Aug 22, 2016</div><div class="post-content"><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>刚学习了 redux 不久，恰好看到一个优秀的 react 项目 <a href="https://github.com/trungdq88/github-explorer" target="_blank" rel="noopener">github-explorer</a>，该应用使用了 RxJS 去处理数据流，为了巩固学习便有了使用 redux 改写的想法。</p>
+<a id="more"></a>
+<p><a href="https://github.com/cnu4/github-explorer-redux" target="_blank" rel="noopener">源码地址</a><br><a href="https://cnu4.github.io/github-explorer-redux" target="_blank" rel="noopener">DEMO地址</a></p>
+<h2 id="自定义中间件"><a href="#自定义中间件" class="headerlink" title="自定义中间件"></a>自定义中间件</h2><p>应用中使用了自定义个中间件 <strong>api</strong>，方便编写异步的 action creators。异步 action 可以定义成以下方式</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">loadUserProfileRepos</span> (<span class="params">username</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    types: [USER_PROFILE_REPOS_REQUEST, USER_PROFILE_REPOS_RECEIVED,</span><br><span class="line">      USER_PROFILE_REPOS_FAILURE],</span><br><span class="line">    callAPI: <span class="function"><span class="params">()</span> =&gt;</span> api(<span class="string">'fechURL'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>中间件接收到这种形式的action，会处理异步请求并在适当的时候 dispatch <code>types</code> 中的各项。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>应用的拉取数据的进度条方面，负责拉取状态 reducer 在接收到诸如 <code>xx_REQUEST</code> 和 <code>xx_RECEIVED</code> 的 actions 后，会更新表示进度条状态的数据。</p>
+<p>因为只是巩固redux学习，所以原应用的部分动画效果没有加上。</p>
+<p>除了数据流部分，应用大部分都是参考了原应用。</p>
+<h2 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h2><p>使用了redux后加上的依赖</p>
+<ul>
+<li>redux</li>
+<li>react-router-redux</li>
+</ul>
+<h2 id="Development"><a href="#Development" class="headerlink" title="Development"></a>Development</h2><p>开发</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install</span><br><span class="line">npm run start</span><br></pre></td></tr></table></figure>
+<p>打包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm run dist</span><br></pre></td></tr></table></figure>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="https://github.com/trungdq88/github-explorer" target="_blank" rel="noopener">github-explorer</a></li>
+<li><a href="http://cn.redux.js.org/index.html" target="_blank" rel="noopener">redux 文档</a></li>
+</ul>
+</div></article></div></main><footer><div class="paginator"><a href="/2017/05/03/hexo-travis/" class="prev">PREV</a><a href="/2016/03/21/Webpack-Vue-MultiplePage/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'fangxwsnotes';
+var disqus_identifier = '2016/08/22/github-explorer-redux/';
+var disqus_title = '使用 redux 改写的 github-explorer';
+var disqus_url = 'http://fangxw.me/2016/08/22/github-explorer-redux/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//fangxwsnotes.disqus.com/count.js" async></script><div class="copyright"><p>© 2016 - 2021 <a href="http://fangxw.me">Fangxw</a>, <span id="host-by"></span> powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-89489706-1",'auto');ga('send','pageview');</script><script>(function(){
+    var req = GetXmlHttpObject()  
+    if (req == null) {  
+        console.log("not support AJAX!");  
+        return;  
+    }
+    req.onreadystatechange = function() {  
+        if (req.readyState === 4 && req.status === 200) {  
+            var deploy_server = req.getResponseHeader("Server");
+            if(deploy_server === 'Coding Pages'){
+                document.getElementById('host-by').innerHTML+='hosted by <a href="https://pages.coding.me">Coding Pages, </a>'
+            }
+        }  
+    };  
+    req.open('GET', document.location, true);
+    req.send(null);
+})();
+function GetXmlHttpObject() {  
+    var xmlHttp = null;  
+    try {  
+        // Firefox, Opera 8.0+, Safari  
+        xmlHttp = new XMLHttpRequest();  
+    } catch (e) {  
+        // Internet Explorer  
+        try {  
+            xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");  
+        } catch (e) {  
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");  
+        }  
+    }  
+    return xmlHttp;  
+}</script></body></html>

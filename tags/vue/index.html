@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.9.0"><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> Fangxw's Blog</title><meta name="description" content="A Blog Powered By Hexo"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/apollo.css"><script data-ad-client="ca-pub-7336094102453045" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script><link rel="search" type="application/opensearchdescription+xml" href="http://fangxw.me/atom.xml" title="Fangxw's Blog"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="http://weibo.com/2489238680" target="_blank" class="nav-list-link">WEIBO</a></li><li class="nav-list-item"><a href="https://github.com/cnu4" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="archive"><h2 class="archive-year">2020</h2><div class="post-item"><div class="post-info">Feb 3, 2020</div><a href="/2020/02/03/vue-tricks/" class="post-title-link">Vue 实战技巧</a></div><h2 class="archive-year">2018</h2><div class="post-item"><div class="post-info">Dec 30, 2018</div><a href="/2018/12/30/webpack4-vue-miltiple-page/" class="post-title-link">Webpack + Vue 多页面项目升级 Webpack 4 以及构建速度优化</a></div><h2 class="archive-year">2016</h2><div class="post-item"><div class="post-info">Mar 21, 2016</div><a href="/2016/03/21/Webpack-Vue-MultiplePage/" class="post-title-link">在多页面项目下使用 Webpack + Vue</a></div></div></main><footer><div class="paginator"></div><div class="copyright"><p>© 2016 - 2021 <a href="http://fangxw.me">Fangxw</a>, <span id="host-by"></span> powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-89489706-1",'auto');ga('send','pageview');</script><script>(function(){
+    var req = GetXmlHttpObject()  
+    if (req == null) {  
+        console.log("not support AJAX!");  
+        return;  
+    }
+    req.onreadystatechange = function() {  
+        if (req.readyState === 4 && req.status === 200) {  
+            var deploy_server = req.getResponseHeader("Server");
+            if(deploy_server === 'Coding Pages'){
+                document.getElementById('host-by').innerHTML+='hosted by <a href="https://pages.coding.me">Coding Pages, </a>'
+            }
+        }  
+    };  
+    req.open('GET', document.location, true);
+    req.send(null);
+})();
+function GetXmlHttpObject() {  
+    var xmlHttp = null;  
+    try {  
+        // Firefox, Opera 8.0+, Safari  
+        xmlHttp = new XMLHttpRequest();  
+    } catch (e) {  
+        // Internet Explorer  
+        try {  
+            xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");  
+        } catch (e) {  
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");  
+        }  
+    }  
+    return xmlHttp;  
+}</script></body></html>
